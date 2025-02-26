@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat WebSocket</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; margin: 20px; }
+        #messages { border: 1px solid #ddd; padding: 10px; width: 50%; margin: auto; height: 200px; overflow-y: auto; }
+        input, button { padding: 10px; margin: 10px; }
+    </style>
+</head>
+<body>
+    <h2>Chat en Tiempo Real con WebSockets</h2>
+    <input type="text" id="usernameInput" placeholder="Ingresa tu nombre..." />
+    <br>
+    <input type="text" id="messageInput" placeholder="Escribe un mensaje..." />
+    <button onclick="sendMessage()">Enviar</button>
+    <div id="messages"></div>
+    <script>
+        const socket = new WebSocket(' https://ddf5-2806-109f-1b-d586-9491-d670-b3cb-456f.ngrok-free.app'); 
+        socket.addEventListener('open', () => console.log('Conectado al servidor WebSocket'));
+        socket.addEventListener('message', (event) => {
+            const data = JSON.parse(event.data);
+            if (data.type === 'history') data.messages.forEach(mensaje => agregarMensaje(mensaje));
+            else if (data.type === 'message') agregarMensaje(data.message);
+        });
+
+        function sendMessage() {
+            const message = document.getElementById('messageInput').value;
+            const username = document.getElementById('usernameInput').value || 'Usuario desconocido';
+            if (message) {
+                socket.send(JSON.stringify({ username, message }));
+                document.getElementById('messageInput').value = '';
+            }
+        }
+
+        function agregarMensaje(mensaje) {
+            document.getElementById('messages').innerHTML += `<p><strong>${mensaje}</strong></p>`;
+        }
+    </script>
+</body>
+</html>
